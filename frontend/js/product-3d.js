@@ -148,14 +148,32 @@ async function loadProduct() {
     video.style.display = "block";
   }
 
-  if (currentProduct.model_3d_url) {
-    viewer.src = currentProduct.model_3d_url;
-    viewer.alt = currentProduct.name;
-    viewer.style.display = "block";
-  } else if (gallery.length) {
+  // On affiche TOUJOURS la première image/vidéo par défaut, même si un
+  // model_3d_url existe : ça évite un cadre vide si le lien 3D est cassé
+  // ou met du temps à charger. Le modèle 3D prend le relais seulement
+  // une fois qu'il a fini de charger avec succès.
+  if (gallery.length) {
     showImage(gallery[0].url);
   } else if (videoItems.length) {
     showVideo(videoItems[0].url);
+  }
+
+  if (currentProduct.model_3d_url && String(currentProduct.model_3d_url).trim()) {
+    viewer.src = currentProduct.model_3d_url;
+    viewer.alt = currentProduct.name;
+
+    viewer.addEventListener("load", () => {
+      // Le modèle 3D a bien chargé : on le montre et on cache l'image/vidéo.
+      viewer.style.display = "block";
+      img.style.display = "none";
+      video.style.display = "none";
+    });
+
+    viewer.addEventListener("error", () => {
+      // Le modèle 3D a échoué : on reste tranquillement sur l'image/vidéo
+      // déjà affichée, pas de cadre vide.
+      viewer.style.display = "none";
+    });
   }
 
   const thumbsWrap = document.querySelector("[data-pd-thumbs]");

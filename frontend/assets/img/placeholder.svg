@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#F0E9DC"/>
+  <g stroke="#C08A28" stroke-width="1" opacity="0.5">
+    <line x1="0" y1="0" x2="400" y2="400"/>
+    <line x1="400" y1="0" x2="0" y2="400"/>
+  </g>
+  <rect x="150" y="150" width="100" height="100" fill="none" stroke="#1B2A4A" stroke-width="2" opacity="0.4"/>
+  <text x="200" y="360" text-anchor="middle" font-family="monospace" font-size="13" fill="#6b6558">DAMA</text>
+</svg>

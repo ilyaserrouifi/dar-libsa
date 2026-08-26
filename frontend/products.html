@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catalogue — DAMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <div data-include="partials/header.html"></div>
+
+  <main class="container">
+    <div style="padding-top:2.5rem;">
+      <h1 class="section-title">Catalogue</h1>
+      <p class="section-sub">Filtrez par catégorie, taille ou recherchez un produit.</p>
+    </div>
+
+    <div class="filters-bar">
+      <select data-filter="category">
+        <option value="">Toutes les catégories</option>
+      </select>
+      <select data-filter="size">
+        <option value="">Toutes les tailles</option>
+        <option value="XS">XS</option>
+        <option value="S">S</option>
+        <option value="M">M</option>
+        <option value="L">L</option>
+        <option value="XL">XL</option>
+        <option value="XXL">XXL</option>
+        <option value="38">38</option>
+        <option value="40">40</option>
+        <option value="42">42</option>
+        <option value="44">44</option>
+      </select>
+      <select data-filter="sort">
+        <option value="newest">Nouveautés</option>
+        <option value="price_asc">Prix croissant</option>
+        <option value="price_desc">Prix décroissant</option>
+      </select>
+      <input type="search" data-filter="search" placeholder="Rechercher..." />
+    </div>
+
+    <div class="product-grid" data-product-grid style="padding-bottom:4rem;" aria-busy="true"></div>
+  </main>
+
+  <div data-include="partials/footer.html"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/product-card.js"></script>
+  <script src="js/partials.js"></script>
+  <script src="js/filters.js"></script>
+  <script>
+    // Pré-remplit le filtre catégorie depuis l'URL (?category=...), une fois
+    // que la liste des catégories a été chargée dynamiquement.
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get("category");
+    document.addEventListener("categories:loaded", (e) => {
+      const sel = document.querySelector("[data-filter='category']");
+      if (!sel) return;
+      sel.insertAdjacentHTML("beforeend", (e.detail || []).map(c =>
+        `<option value="${c.slug}">${c.name}</option>`).join(""));
+      if (cat) {
+        sel.value = cat;
+        sel.dispatchEvent(new Event("change")); // relance le filtrage avec la catégorie pré-sélectionnée
+      }
+    });
+  </script>
+</body>
+</html>

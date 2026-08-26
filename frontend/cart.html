@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panier — DAMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <div data-include="partials/header.html"></div>
+
+  <main class="container" style="padding:2.5rem 0 4rem;">
+    <h1 class="section-title">Votre panier</h1>
+    <div id="cart-empty" class="section-sub" style="display:none;">
+      Votre panier est vide. <a href="products.html" style="color:var(--c-brass);">Découvrir la collection →</a>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1.6fr 1fr; gap:2.5rem; align-items:start;">
+      <div id="cart-lines"></div>
+      <div class="cart-summary">
+        <div class="summary-row"><span>Sous-total</span><span data-subtotal>0.00 MAD</span></div>
+        <div class="summary-row"><span>Livraison</span><span>Calculée à l'étape suivante</span></div>
+        <div class="summary-row total"><span>Total</span><span data-total>0.00 MAD</span></div>
+        <a href="checkout.html" class="btn" style="width:100%; justify-content:center; margin-top:1rem;">Passer commande</a>
+      </div>
+    </div>
+  </main>
+
+  <div data-include="partials/footer.html"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/partials.js"></script>
+  <script>
+    function renderCart() {
+      const items = Cart.items();
+      const linesEl = document.getElementById("cart-lines");
+      const emptyEl = document.getElementById("cart-empty");
+
+      emptyEl.style.display = items.length ? "none" : "block";
+
+      linesEl.innerHTML = items.map(i => `
+        <div class="cart-line" data-line="${i.variantId}">
+          <img src="${i.image || 'assets/img/placeholder.svg'}" alt="${i.name}" />
+          <div>
+            <strong>${i.name}</strong><br/>
+            <span style="font-size:0.85rem; color:#6b6558;">Taille ${i.size} · ${i.color}</span><br/>
+            <span style="font-family:var(--f-mono); font-size:0.85rem; color:var(--c-brass);">${i.price.toFixed(2)} MAD</span>
+          </div>
+          <input class="qty-input" type="number" min="1" value="${i.quantity}" data-qty="${i.variantId}" />
+          <button class="icon-btn" data-remove="${i.variantId}" aria-label="Retirer">✕</button>
+        </div>
+      `).join("");
+
+      document.querySelectorAll("[data-qty]").forEach(input => {
+        input.addEventListener("change", () => {
+          Cart.updateQuantity(input.dataset.qty, parseInt(input.value, 10));
+          renderCart();
+        });
+      });
+      document.querySelectorAll("[data-remove]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          Cart.remove(btn.dataset.remove);
+          renderCart();
+        });
+      });
+
+      const subtotal = Cart.subtotal();
+      document.querySelector("[data-subtotal]").textContent = `${subtotal.toFixed(2)} MAD`;
+      document.querySelector("[data-total]").textContent = `${subtotal.toFixed(2)} MAD`;
+    }
+
+    document.addEventListener("DOMContentLoaded", renderCart);
+  </script>
+</body>
+</html>

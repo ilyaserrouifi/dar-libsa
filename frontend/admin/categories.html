@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catégories — Admin DAMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  <style>
+    .cat-grid-admin{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:1rem; }
+    .cat-card-admin{
+      background:var(--bg-panel); border:1px solid var(--border-soft); border-radius:var(--radius-md);
+      overflow:hidden; display:flex; flex-direction:column;
+    }
+    .cat-cover{
+      height:110px; background:var(--bg-panel-2); position:relative;
+      display:flex; align-items:center; justify-content:center; overflow:hidden;
+    }
+    .cat-cover img{ width:100%; height:100%; object-fit:cover; }
+    .cat-cover i{ font-size:1.8rem; color:var(--brass-dim); }
+    .cat-body{ padding:1rem 1.1rem 1.1rem; display:flex; flex-direction:column; gap:0.4rem; flex:1; }
+    .cat-body .name{ font-family:var(--f-display); font-size:1.05rem; color:var(--ink); display:flex; align-items:center; gap:0.5rem; }
+    .cat-body .name i{ color:var(--brass-bright); font-size:0.9rem; }
+    .cat-body .slug{ font-family:var(--f-mono); font-size:0.72rem; color:var(--ink-mute); }
+    .cat-body .count{ font-size:0.78rem; color:var(--ink-soft); margin-top:0.15rem; }
+    .cat-actions{ display:flex; gap:0.4rem; margin-top:auto; padding-top:0.7rem; }
+    .cat-actions .a-btn{ flex:1; justify-content:center; }
+    .icon-picker{ display:grid; grid-template-columns:repeat(6, 1fr); gap:0.5rem; margin-top:0.5rem; }
+    .icon-picker button{
+      aspect-ratio:1; border:1px solid var(--border-soft); border-radius:var(--radius-sm);
+      background:var(--bg-panel-2); color:var(--ink-mute); display:flex; align-items:center; justify-content:center;
+      font-size:1rem; transition:all 0.15s var(--ease);
+    }
+    .icon-picker button:hover{ border-color:var(--border-strong); color:var(--ink); }
+    .icon-picker button.selected{ border-color:var(--brass); color:var(--brass-bright); background:var(--bg-panel-raised); }
+    .cover-drop{ aspect-ratio:16/9; }
+  </style>
+</head>
+<body data-page="categories">
+  <div class="admin-shell">
+    <div data-admin-sidebar></div>
+
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <div>
+          <h1>Catégories</h1>
+          <p class="sub">Les familles de produits affichées sur la boutique — accueil, menu et pied de page se mettent à jour automatiquement.</p>
+        </div>
+        <div class="admin-topbar-actions">
+          <button class="a-btn a-btn-brass" id="new-cat-btn"><i class="fa-solid fa-plus"></i> Nouvelle catégorie</button>
+        </div>
+      </div>
+
+      <div class="cat-grid-admin" data-cat-grid>
+        <p class="a-loading-note">Chargement…</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- ---------- Modal ajout / édition ---------- -->
+  <div class="a-modal-overlay" id="cat-modal" style="display:none;">
+    <div class="a-modal">
+      <h2 data-modal-title>Nouvelle catégorie</h2>
+      <input type="hidden" id="f-cat-id" />
+      <div class="a-field">
+        <label>Nom</label>
+        <input type="text" id="f-cat-name" placeholder="Ex: Kaftans" />
+      </div>
+      <div class="a-field">
+        <label>Slug (utilisé dans l'URL)</label>
+        <input type="text" id="f-cat-slug" placeholder="Ex: kaftans" />
+        <p class="hint">Généré automatiquement à partir du nom — modifiable si besoin.</p>
+      </div>
+      <div class="a-field">
+        <label>Icône</label>
+        <div class="icon-picker" data-icon-picker></div>
+      </div>
+      <div class="a-field" style="margin:0;">
+        <label>Image de couverture (optionnel)</label>
+        <label class="img-drop cover-drop" id="cover-drop">
+          <img id="cover-preview" style="display:none;" alt="" />
+          <div id="cover-placeholder">
+            <i class="fa-solid fa-image"></i>
+            <div>Clique pour choisir une image</div>
+          </div>
+          <input type="file" id="f-cat-cover-file" accept="image/*" />
+          <div class="drop-status" id="cover-status" style="display:none;"></div>
+        </label>
+        <button type="button" class="a-btn a-btn-ghost a-btn-sm" id="clear-cover" style="margin-top:0.6rem; width:100%;">
+          <i class="fa-solid fa-xmark"></i> Retirer l'image
+        </button>
+      </div>
+      <div class="a-modal-actions">
+        <button class="a-btn a-btn-ghost" id="cat-cancel-btn">Annuler</button>
+        <button class="a-btn a-btn-brass" id="cat-save-btn"><i class="fa-solid fa-check"></i> Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/image-compress.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script>
+    const ICONS = [
+      "fa-shirt", "fa-bag-shopping", "fa-shoe-prints", "fa-socks",
+      "fa-vest", "fa-mitten", "fa-hat-cowboy", "fa-glasses",
+      "fa-gem", "fa-ring", "fa-vest-patches", "fa-mask",
+    ];
+
+    let categories = [];
+    let coverUrl = "";
+
+    function iconPickerHTML(selected) {
+      return ICONS.map(icon => `
+        <button type="button" data-icon="${icon}" class="${icon === selected ? "selected" : ""}">
+          <i class="fa-solid ${icon}"></i>
+        </button>`).join("");
+    }
+
+    function renderCategories() {
+      const grid = document.querySelector("[data-cat-grid]");
+      if (!categories.length) {
+        grid.innerHTML = `<p class="a-loading-note">Aucune catégorie. Clique sur "Nouvelle catégorie" pour commencer.</p>`;
+        return;
+      }
+      grid.innerHTML = categories.map(c => `
+        <div class="cat-card-admin">
+          <div class="cat-cover">
+            ${c.image ? `<img src="${c.image}" alt="" />` : `<i class="fa-solid ${c.icon || "fa-shirt"}"></i>`}
+          </div>
+          <div class="cat-body">
+            <div class="name"><i class="fa-solid ${c.icon || "fa-shirt"}"></i> ${c.name}</div>
+            <div class="slug">/${c.slug}</div>
+            <div class="count">${c.product_count} produit${c.product_count > 1 ? "s" : ""}</div>
+            <div class="cat-actions">
+              <button class="a-btn a-btn-ghost a-btn-sm" data-edit="${c.id}"><i class="fa-solid fa-pen"></i> Modifier</button>
+              <button class="a-btn a-btn-danger a-btn-sm" data-delete="${c.id}"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+        </div>`).join("");
+
+      grid.querySelectorAll("[data-edit]").forEach(btn => {
+        btn.addEventListener("click", () => openModal(categories.find(c => c.id == btn.dataset.edit)));
+      });
+      grid.querySelectorAll("[data-delete]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("Supprimer cette catégorie ?")) return;
+          try {
+            await api.deleteCategory(btn.dataset.delete);
+            showToast("Catégorie supprimée.");
+            loadCategories();
+          } catch (err) {
+            showToast(err.message, "error");
+          }
+        });
+      });
+    }
+
+    async function loadCategories() {
+      try {
+        categories = await api.getCategories();
+        renderCategories();
+      } catch (err) {
+        document.querySelector("[data-cat-grid]").innerHTML =
+          `<p class="a-loading-note">Erreur: ${err.message}</p>`;
+      }
+    }
+    loadCategories();
+
+    // ---------- Modal ----------
+    const modal = document.getElementById("cat-modal");
+
+    function setCoverPreview(url) {
+      coverUrl = url || "";
+      const preview = document.getElementById("cover-preview");
+      const placeholder = document.getElementById("cover-placeholder");
+      if (url) {
+        preview.src = url; preview.style.display = "block";
+        placeholder.style.display = "none";
+      } else {
+        preview.style.display = "none"; placeholder.style.display = "flex";
+      }
+    }
+
+    function selectIcon(value) {
+      document.querySelectorAll("[data-icon-picker] button").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.icon === value);
+      });
+    }
+
+    function openModal(cat) {
+      document.querySelector("[data-modal-title]").textContent = cat ? "Modifier la catégorie" : "Nouvelle catégorie";
+      document.getElementById("f-cat-id").value = cat?.id || "";
+      document.getElementById("f-cat-name").value = cat?.name || "";
+      document.getElementById("f-cat-slug").value = cat?.slug || "";
+      document.querySelector("[data-icon-picker]").innerHTML = iconPickerHTML(cat?.icon || "fa-shirt");
+      document.querySelectorAll("[data-icon-picker] button").forEach(btn => {
+        btn.addEventListener("click", () => selectIcon(btn.dataset.icon));
+      });
+      setCoverPreview(cat?.image || "");
+      modal.style.display = "flex";
+    }
+    function closeModal() { modal.style.display = "none"; }
+
+    document.getElementById("new-cat-btn").addEventListener("click", () => openModal(null));
+    document.getElementById("cat-cancel-btn").addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+
+    let slugTouched = false;
+    document.getElementById("f-cat-slug").addEventListener("input", () => { slugTouched = true; });
+    document.getElementById("f-cat-name").addEventListener("input", (e) => {
+      if (slugTouched) return;
+      document.getElementById("f-cat-slug").value = e.target.value
+        .trim().toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    });
+
+    document.getElementById("f-cat-cover-file").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const status = document.getElementById("cover-status");
+      status.style.display = "block"; status.textContent = "Compression de l'image…";
+      try {
+        const dataUrl = await compressImageFile(file, 1200, 0.78);
+        setCoverPreview(dataUrl);
+        status.style.display = "none";
+      } catch (err) {
+        status.style.display = "none";
+        showToast(err.message, "error");
+      }
+    });
+    document.getElementById("clear-cover").addEventListener("click", () => setCoverPreview(""));
+
+    document.getElementById("cat-save-btn").addEventListener("click", async () => {
+      const btn = document.getElementById("cat-save-btn");
+      const id = document.getElementById("f-cat-id").value;
+      const name = document.getElementById("f-cat-name").value.trim();
+      const slug = document.getElementById("f-cat-slug").value.trim();
+      const icon = document.querySelector("[data-icon-picker] button.selected")?.dataset.icon || "fa-shirt";
+      if (!name) { showToast("Le nom est requis.", "error"); return; }
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enregistrement…`;
+      try {
+        const payload = { name, slug, icon, image: coverUrl };
+        if (id) await api.updateCategory(id, payload);
+        else await api.createCategory(payload);
+        showToast("Catégorie enregistrée.");
+        closeModal();
+        slugTouched = false;
+        loadCategories();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> Enregistrer`;
+      }
+    });
+  </script>
+</body>
+</html>

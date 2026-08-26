@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Produit — DAMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+
+  <div data-include="partials/header.html"></div>
+
+  <main class="container">
+    <nav class="breadcrumb" data-breadcrumb aria-label="Fil d'ariane">
+      <a href="index.html">Accueil</a> <span>/</span> <a href="products.html">Catalogue</a> <span>/</span> <span data-breadcrumb-current>…</span>
+    </nav>
+
+    <div class="product-detail" data-product-root aria-busy="true">
+      <div class="viewer-wrap">
+        <!--
+          Visionneuse 3D : model-viewer charge un .glb/.gltf du produit.
+          Si aucun modèle 3D n'existe encore pour ce produit, on retombe
+          sur une image classique (voir script plus bas).
+        -->
+        <span class="pd-badge" data-pd-badge style="display:none;"></span>
+        <model-viewer
+          data-viewer
+          camera-controls
+          auto-rotate
+          shadow-intensity="1"
+          exposure="1"
+          style="display:none;">
+        </model-viewer>
+        <img data-fallback-image style="display:none;" alt="" />
+        <video data-fallback-video style="display:none; width:100%;" controls playsinline></video>
+        <div class="zellige-divider"></div>
+      </div>
+
+      <div class="pd-info">
+        <div class="pd-thumbs" data-pd-thumbs style="display:none;"></div>
+        <h1 data-name>Chargement…</h1>
+        <div class="pd-price" data-price></div>
+        <p data-description style="color:#4a463d; max-width:48ch;"></p>
+
+        <div class="opt-group">
+          <span class="opt-label">Couleur</span>
+          <div class="opt-swatches" data-colors></div>
+        </div>
+
+        <div class="opt-group">
+          <span class="opt-label">Taille</span>
+          <div class="opt-swatches" data-sizes></div>
+          <p class="stock-note" data-stock-note style="display:none;"></p>
+        </div>
+
+        <button class="btn" data-add-to-cart disabled>Ajouter au panier</button>
+
+        <div class="pd-details" data-pd-details style="display:none;">
+          <h3>Caractéristiques</h3>
+          <table data-pd-details-table></table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div data-include="partials/footer.html"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/partials.js"></script>
+  <script src="js/product-3d.js"></script>
+</body>
+</html>

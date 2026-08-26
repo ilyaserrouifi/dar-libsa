@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vue d'ensemble — Admin DAMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+</head>
+<body data-page="overview">
+  <div class="admin-shell">
+    <div data-admin-sidebar></div>
+
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <div>
+          <h1>Vue d'ensemble</h1>
+          <p class="sub">Aperçu rapide de l'activité de la boutique.</p>
+        </div>
+      </div>
+
+      <div class="stat-cards">
+        <div class="stat-card"><div class="l">Chiffre d'affaires (30j)</div><div class="v" data-stat="revenue">—</div></div>
+        <div class="stat-card"><div class="l">Commandes (30j)</div><div class="v" data-stat="orders">—</div></div>
+        <div class="stat-card"><div class="l">Produits actifs</div><div class="v" data-stat="products">—</div></div>
+        <div class="stat-card"><div class="l">Variants stock faible</div><div class="v" data-stat="low_stock">—</div></div>
+      </div>
+
+      <div class="a-panel">
+        <h2>Dernières commandes</h2>
+        <div class="a-table-wrap" style="border:none;">
+          <table class="a-table">
+            <thead>
+              <tr><th>Commande</th><th>Client</th><th>Total</th><th>Statut</th><th>Date</th></tr>
+            </thead>
+            <tbody data-recent-orders>
+              <tr class="a-empty-row"><td colspan="5">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script>
+    const STATUS_BADGE = { paid: "ok", shipped: "ok", delivered: "ok", pending: "low", cancelled: "out" };
+
+    async function loadOverview() {
+      try {
+        const [orders, products] = await Promise.all([api.getOrders(), api.getProducts({ includeVariants: true, limit: 500 })]);
+
+        const recent = orders.slice(0, 8);
+        document.querySelector("[data-recent-orders]").innerHTML = recent.length
+          ? recent.map(o => `
+            <tr>
+              <td class="prod-name">#${o.id}</td>
+              <td>${o.customer_name || "—"}</td>
+              <td>${Number(o.total).toFixed(2)} MAD</td>
+              <td><span class="a-badge ${STATUS_BADGE[o.status] || 'neutral'}">${o.status}</span></td>
+              <td>${new Date(o.created_at).toLocaleDateString('fr-FR')}</td>
+            </tr>`).join("")
+          : `<tr class="a-empty-row"><td colspan="5">Aucune commande pour l'instant.</td></tr>`;
+
+        const last30 = orders.filter(o => (Date.now() - new Date(o.created_at)) < 30 * 24 * 3600 * 1000);
+        document.querySelector("[data-stat='revenue']").textContent =
+          last30.reduce((s, o) => s + Number(o.total), 0).toFixed(0) + " MAD";
+        document.querySelector("[data-stat='orders']").textContent = last30.length;
+        document.querySelector("[data-stat='products']").textContent = products.length;
+
+        const lowStock = products.reduce((sum, p) => sum + (p.variants || []).filter(v => v.stock > 0 && v.stock < 5).length, 0);
+        document.querySelector("[data-stat='low_stock']").textContent = lowStock;
+      } catch (err) {
+        console.error(err);
+        document.querySelector("[data-recent-orders]").innerHTML =
+          `<tr class="a-empty-row"><td colspan="5">Impossible de charger les données: ${err.message}</td></tr>`;
+      }
+    }
+    loadOverview();
+  </script>
+</body>
+</html>

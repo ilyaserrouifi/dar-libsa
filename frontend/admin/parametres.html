@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paramètres — Admin DAMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  <style>
+    .theme-option{
+      display:flex; align-items:center; gap:1rem; padding:1rem;
+      border:1px solid var(--border-soft); border-radius:var(--radius-md);
+      cursor:pointer; margin-bottom:0.75rem; transition:border-color 0.15s var(--ease);
+    }
+    .theme-option:hover{ border-color:var(--border-strong); }
+    .theme-option.selected{ border-color:var(--brass); background:var(--bg-panel-2); }
+    .theme-swatch{ width:44px; height:44px; border-radius:50%; flex-shrink:0; border:2px solid rgba(255,255,255,0.15); }
+    .theme-swatch.indigo{ background:linear-gradient(135deg, #1B2A4A 50%, #C08A28 50%); }
+    .theme-swatch.rose{ background:linear-gradient(135deg, #B85C7A 50%, #D9A46E 50%); }
+    .theme-option .name{ font-weight:500; color:var(--ink); font-size:0.92rem; }
+    .theme-option .desc{ font-size:0.78rem; color:var(--ink-mute); }
+    .theme-option input{ margin-left:auto; width:16px; height:16px; accent-color:var(--brass); }
+    .logo-drop{ aspect-ratio:auto; height:140px; }
+    .slide-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:0.6rem; margin-bottom:1rem; }
+    .slide-thumb{ position:relative; aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; border:1px solid var(--border-soft); }
+    .slide-thumb img{ width:100%; height:100%; object-fit:cover; }
+    .slide-thumb .num{
+      position:absolute; top:4px; left:4px; background:rgba(11,14,20,0.75); color:var(--brass-bright);
+      font-family:var(--f-mono); font-size:0.65rem; padding:0.1rem 0.4rem; border-radius:99px;
+    }
+    .slide-thumb .remove{
+      position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%;
+      background:rgba(11,14,20,0.75); color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem;
+    }
+    .slide-thumb .remove:hover{ background:var(--danger); }
+    .a-panel h2 i{ color:var(--brass-dim); margin-right:0.5rem; font-size:1rem; }
+  </style>
+</head>
+<body data-page="settings">
+  <div class="admin-shell">
+    <div data-admin-sidebar></div>
+
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <div>
+          <h1>Paramètres</h1>
+          <p class="sub">Identité, accueil, contact et réseaux sociaux — tout est appliqué instantanément sur la boutique.</p>
+        </div>
+        <div class="admin-topbar-actions">
+          <button class="a-btn a-btn-brass" id="save-btn"><i class="fa-solid fa-check"></i> Enregistrer</button>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div>
+          <div class="a-panel">
+            <h2><i class="fa-solid fa-palette"></i>Thème de couleurs</h2>
+            <label class="theme-option" data-theme-option="indigo">
+              <div class="theme-swatch indigo"></div>
+              <div>
+                <div class="name">Indigo &amp; Laiton</div>
+                <div class="desc">Bleu de Fès et accents dorés.</div>
+              </div>
+              <input type="radio" name="theme" value="indigo" />
+            </label>
+            <label class="theme-option" data-theme-option="rose">
+              <div class="theme-swatch rose"></div>
+              <div>
+                <div class="name">Rose &amp; Beige</div>
+                <div class="desc">Thème féminin et doux — rose poudré et beige doré, coins arrondis.</div>
+              </div>
+              <input type="radio" name="theme" value="rose" />
+            </label>
+          </div>
+
+          <div class="a-panel">
+            <h2><i class="fa-solid fa-house"></i>Page d'accueil</h2>
+            <div class="a-field">
+              <label>Étiquette (au-dessus du titre)</label>
+              <input type="text" id="f-hero-eyebrow" placeholder="Collection en cours" />
+            </div>
+            <div class="a-field">
+              <label>Titre principal</label>
+              <textarea id="f-hero-title" placeholder="Des pièces taillées pour la vie de tous les jours."></textarea>
+            </div>
+            <div class="a-field" style="margin:0;">
+              <label>Sous-titre</label>
+              <textarea id="f-hero-subtitle" placeholder="T-shirts, sacs, chaussures et sandales…"></textarea>
+            </div>
+          </div>
+
+          <div class="a-panel">
+            <h2><i class="fa-solid fa-bullhorn"></i>Bannière promo</h2>
+            <div class="a-toggle-row" style="margin-bottom:1rem;">
+              <input type="checkbox" id="f-promo-active" />
+              <label for="f-promo-active" style="margin:0; text-transform:none; letter-spacing:0; font-size:0.85rem; color:var(--ink-soft);">
+                Afficher une bannière promo en haut du site
+              </label>
+            </div>
+            <div class="a-field" style="margin:0;">
+              <label>Message</label>
+              <input type="text" id="f-promo-text" placeholder="Livraison offerte dès 500 MAD" />
+            </div>
+          </div>
+
+          <div class="a-panel">
+            <h2><i class="fa-solid fa-address-card"></i>Contact &amp; coordonnées</h2>
+            <div class="a-field-row">
+              <div class="a-field"><label>Téléphone</label><input type="text" id="f-phone" placeholder="0600000000" /></div>
+              <div class="a-field"><label>WhatsApp</label><input type="text" id="f-whatsapp" placeholder="+212600000000" /></div>
+            </div>
+            <div class="a-field-row">
+              <div class="a-field"><label>Email</label><input type="email" id="f-email" placeholder="contact@dama.ma" /></div>
+              <div class="a-field"><label>Horaires</label><input type="text" id="f-horaires" placeholder="Lun-Sam: 10:00-19:00" /></div>
+            </div>
+            <div class="a-field">
+              <label>Adresse</label>
+              <input type="text" id="f-address" placeholder="Rue…, ville, Maroc" />
+            </div>
+            <div class="a-field" style="margin:0;">
+              <label>Lien Google Maps (carte intégrée — optionnel)</label>
+              <input type="text" id="f-maps-link" placeholder="https://www.google.com/maps/embed?..." />
+              <p class="hint">Sur Google Maps : ouvre ton point de vente → Partager → onglet "Intégrer une carte" → copie le lien src="..." et colle-le ici. (Un simple lien de partage type maps.app.goo.gl ne peut pas s'afficher en carte — dans ce cas, laisse ce champ vide : la carte utilisera l'adresse ci-dessus.)</p>
+            </div>
+          </div>
+
+          <div class="a-panel">
+            <h2><i class="fa-solid fa-share-nodes"></i>Réseaux sociaux</h2>
+            <div class="a-field"><label>Facebook</label><input type="text" id="f-facebook" placeholder="https://facebook.com/dama" /></div>
+            <div class="a-field"><label>Instagram</label><input type="text" id="f-instagram" placeholder="https://instagram.com/dama" /></div>
+            <div class="a-field" style="margin:0;"><label>TikTok</label><input type="text" id="f-tiktok" placeholder="https://tiktok.com/@dama" /></div>
+          </div>
+
+          <div class="a-panel">
+            <h2><i class="fa-solid fa-align-left"></i>Description du site</h2>
+            <div class="a-field" style="margin:0;">
+              <label>Utilisée dans le pied de page et le référencement</label>
+              <textarea id="f-site-description" placeholder="DAMA — vêtements, sacs, chaussures…"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="a-panel">
+            <h2><i class="fa-solid fa-image"></i>Logo</h2>
+            <label class="img-drop logo-drop" id="logo-drop">
+              <img id="logo-preview" style="display:none;" alt="" />
+              <div id="logo-placeholder">
+                <i class="fa-solid fa-image"></i>
+                <div>Clique pour choisir le logo</div>
+                <div class="hint">Remplace "DAMA" dans l'en-tête et le pied de page</div>
+              </div>
+              <input type="file" id="f-logo-file" accept="image/*" />
+              <div class="drop-status" id="logo-status" style="display:none;"></div>
+            </label>
+            <button type="button" class="a-btn a-btn-ghost a-btn-sm" id="clear-logo" style="margin-top:0.75rem; width:100%;">
+              <i class="fa-solid fa-xmark"></i> Revenir au texte "DAMA"
+            </button>
+          </div>
+
+          <div class="a-panel">
+            <h2><i class="fa-solid fa-images"></i>Diaporama — page d'accueil</h2>
+            <p class="a-field hint" style="margin-top:-0.4rem; margin-bottom:1rem;">
+              Ajoute une ou plusieurs images : avec 2 images ou plus, elles défilent automatiquement toutes les 4 secondes.
+            </p>
+            <div class="slide-grid" id="slide-grid"></div>
+            <label class="img-drop" id="slide-drop" style="aspect-ratio:auto; height:100px;">
+              <div>
+                <i class="fa-solid fa-circle-plus"></i>
+                <div>Ajouter une image au diaporama</div>
+              </div>
+              <input type="file" id="f-slide-file" accept="image/*" multiple />
+              <div class="drop-status" id="slide-status" style="display:none;"></div>
+            </label>
+          </div>
+
+          <div class="a-panel">
+            <h2><i class="fa-solid fa-video"></i>Vidéo de fond (optionnel)</h2>
+            <p class="a-field hint" style="margin-top:-0.4rem; margin-bottom:1rem;">
+              Si une vidéo est définie, elle remplace le diaporama d'images ci-dessus sur l'accueil, en plein écran.
+            </p>
+            <label class="a-btn a-btn-ghost" style="width:100%; justify-content:center; cursor:pointer;" id="video-drop">
+              <i class="fa-solid fa-upload"></i>&nbsp; Choisir une vidéo depuis cet appareil
+              <input type="file" id="f-hero-video-file" accept="video/*" style="display:none;" />
+            </label>
+            <div id="video-status" class="a-field hint" style="display:none; margin-top:0.6rem;"></div>
+            <div id="video-current" style="display:none; margin-top:0.75rem;">
+              <video id="video-preview" style="width:100%; border-radius:var(--radius-md);" muted controls></video>
+              <button type="button" class="a-btn a-btn-ghost a-btn-sm" id="clear-video" style="margin-top:0.5rem; width:100%;">
+                <i class="fa-solid fa-xmark"></i> Retirer la vidéo
+              </button>
+            </div>
+            <div class="a-field" style="margin:1rem 0 0;">
+              <label>Ou colle une URL de vidéo déjà hébergée</label>
+              <input type="text" id="f-hero-video" placeholder="https://…video.mp4" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="../js/image-compress.js"></script>
+  <script type="module" src="../js/blob-upload.js"></script>
+  <script>
+    let logoUrl = "";
+    let slideImages = [];
+
+    // ---------- Vidéo de fond : upload direct (contourne la limite 4.5 Mo) ----------
+    function setVideoPreview(url) {
+      const box = document.getElementById("video-current");
+      const preview = document.getElementById("video-preview");
+      const urlField = document.getElementById("f-hero-video");
+      if (url) {
+        preview.src = url;
+        box.style.display = "block";
+        urlField.value = url;
+      } else {
+        preview.src = "";
+        box.style.display = "none";
+        urlField.value = "";
+      }
+    }
+
+    document.getElementById("f-hero-video-file").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const status = document.getElementById("video-status");
+      status.style.display = "block";
+      status.textContent = "Envoi en cours… démarrage…";
+      // Sur iPhone/iPad, uploadLargeFile ne peut pas remonter de % (voir
+      // blob-upload.js) : indicateur "en cours" avec le temps écoulé pour
+      // que ça ne semble pas figé pendant l'envoi.
+      let progressReceived = false;
+      let elapsed = 0;
+      const ticker = setInterval(() => {
+        if (progressReceived) return;
+        elapsed += 1;
+        status.textContent = `Envoi en cours… (${elapsed}s — ne quittez pas la page)`;
+      }, 1000);
+      try {
+        // uploadLargeFile envoie directement au stockage Vercel Blob depuis le
+        // navigateur — indispensable ici, une vidéo de téléphone dépasse presque
+        // toujours la limite de 4.5 Mo des fonctions serverless de Vercel.
+        const result = await window.uploadLargeFile(file, (pct) => {
+          progressReceived = true;
+          status.textContent = `Envoi en cours… ${pct}%`;
+        });
+        setVideoPreview(result.url);
+        status.style.display = "none";
+        showToast("Vidéo envoyée.");
+      } catch (err) {
+        status.textContent = `Échec: ${err.message}`;
+        showToast("Échec de l'upload vidéo: " + err.message, "error");
+      } finally {
+        clearInterval(ticker);
+      }
+      e.target.value = "";
+    });
+
+    document.getElementById("clear-video").addEventListener("click", () => setVideoPreview(""));
+    document.getElementById("f-hero-video").addEventListener("input", (e) => {
+      if (e.target.value.trim()) setVideoPreview(e.target.value.trim());
+    });
+
+    function selectTheme(value) {
+      document.querySelectorAll("[data-theme-option]").forEach(el => {
+        const isSelected = el.dataset.themeOption === value;
+        el.classList.toggle("selected", isSelected);
+        el.querySelector("input").checked = isSelected;
+      });
+    }
+    document.querySelectorAll("[data-theme-option]").forEach(el => {
+      el.addEventListener("click", () => selectTheme(el.dataset.themeOption));
+    });
+
+    // ---------- Logo ----------
+    function setLogoPreview(url) {
+      logoUrl = url || "";
+      const preview = document.getElementById("logo-preview");
+      const placeholder = document.getElementById("logo-placeholder");
+      if (url) {
+        preview.src = url; preview.style.display = "block";
+        placeholder.style.display = "none";
+      } else {
+        preview.style.display = "none"; placeholder.style.display = "flex";
+      }
+    }
+    document.getElementById("f-logo-file").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const status = document.getElementById("logo-status");
+      status.style.display = "block"; status.textContent = "Compression de l'image…";
+      try {
+        const dataUrl = await compressImageFile(file, 600, 0.85); // logo : petit, garde la netteté
+        setLogoPreview(dataUrl);
+        status.style.display = "none";
+      } catch (err) {
+        status.style.display = "none";
+        showToast(err.message, "error");
+      }
+    });
+    document.getElementById("clear-logo").addEventListener("click", () => setLogoPreview(""));
+
+    // ---------- Diaporama accueil ----------
+    function renderSlides() {
+      const grid = document.getElementById("slide-grid");
+      grid.innerHTML = slideImages.map((url, i) => `
+        <div class="slide-thumb">
+          <span class="num">${i + 1}</span>
+          <img src="${url}" alt="" />
+          <button type="button" class="remove" data-remove-slide="${i}"><i class="fa-solid fa-xmark"></i></button>
+        </div>`).join("");
+      grid.querySelectorAll("[data-remove-slide]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          slideImages.splice(parseInt(btn.dataset.removeSlide, 10), 1);
+          renderSlides();
+        });
+      });
+    }
+    document.getElementById("f-slide-file").addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
+      const status = document.getElementById("slide-status");
+      status.style.display = "block";
+      for (const file of files) {
+        status.textContent = `Compression de ${file.name}…`;
+        try {
+          const dataUrl = await compressImageFile(file, 1600, 0.78);
+          slideImages.push(dataUrl);
+          renderSlides();
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      }
+      status.style.display = "none";
+      e.target.value = "";
+    });
+
+    // ---------- Chargement ----------
+    async function loadSettings() {
+      try {
+        const s = await api.getSettings();
+        selectTheme(s.theme || "indigo");
+        document.getElementById("f-hero-eyebrow").value = s.hero_eyebrow || "";
+        document.getElementById("f-hero-title").value = s.hero_title || "";
+        document.getElementById("f-hero-subtitle").value = s.hero_subtitle || "";
+        document.getElementById("f-promo-active").checked = s.promo_active === "true";
+        document.getElementById("f-promo-text").value = s.promo_text || "";
+        document.getElementById("f-phone").value = s.phone || "";
+        document.getElementById("f-whatsapp").value = s.whatsapp || "";
+        document.getElementById("f-email").value = s.email || "";
+        document.getElementById("f-horaires").value = s.horaires || "";
+        document.getElementById("f-address").value = s.address || "";
+        document.getElementById("f-maps-link").value = s.maps_link || "";
+        document.getElementById("f-facebook").value = s.facebook || "";
+        document.getElementById("f-instagram").value = s.instagram || "";
+        document.getElementById("f-tiktok").value = s.tiktok || "";
+        document.getElementById("f-site-description").value = s.site_description || "";
+        setVideoPreview(s.hero_video || "");
+        setLogoPreview(s.logo || "");
+        try { slideImages = JSON.parse(s.hero_images || "[]"); } catch { slideImages = []; }
+        if (!slideImages.length && s.hero_image) slideImages = [s.hero_image];
+        renderSlides();
+      } catch (err) {
+        showToast("Impossible de charger les réglages: " + err.message, "error");
+      }
+    }
+    loadSettings();
+
+    document.getElementById("save-btn").addEventListener("click", async () => {
+      const btn = document.getElementById("save-btn");
+      const theme = document.querySelector('input[name="theme"]:checked')?.value || "indigo";
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enregistrement…`;
+      try {
+        await api.updateSettings({
+          theme,
+          logo: logoUrl,
+          hero_eyebrow: document.getElementById("f-hero-eyebrow").value.trim(),
+          hero_title: document.getElementById("f-hero-title").value.trim(),
+          hero_subtitle: document.getElementById("f-hero-subtitle").value.trim(),
+          hero_image: slideImages[0] || "",
+          hero_images: JSON.stringify(slideImages),
+          hero_video: document.getElementById("f-hero-video").value.trim(),
+          promo_active: document.getElementById("f-promo-active").checked ? "true" : "false",
+          promo_text: document.getElementById("f-promo-text").value.trim(),
+          phone: document.getElementById("f-phone").value.trim(),
+          whatsapp: document.getElementById("f-whatsapp").value.trim(),
+          email: document.getElementById("f-email").value.trim(),
+          horaires: document.getElementById("f-horaires").value.trim(),
+          address: document.getElementById("f-address").value.trim(),
+          maps_link: document.getElementById("f-maps-link").value.trim(),
+          facebook: document.getElementById("f-facebook").value.trim(),
+          instagram: document.getElementById("f-instagram").value.trim(),
+          tiktok: document.getElementById("f-tiktok").value.trim(),
+          site_description: document.getElementById("f-site-description").value.trim(),
+        });
+        showToast("Réglages enregistrés — visibles immédiatement sur le site.");
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> Enregistrer`;
+      }
+    });
+  </script>
+</body>
+</html>

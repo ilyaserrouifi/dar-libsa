@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Produits — Admin DAMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+</head>
+<body data-page="products">
+  <div class="admin-shell">
+    <div data-admin-sidebar></div>
+
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <div>
+          <h1>Produits</h1>
+          <p class="sub">Gère le catalogue : t-shirts, sacs, chaussures, sandales.</p>
+        </div>
+        <div class="admin-topbar-actions">
+          <a href="product-form.html" class="a-btn a-btn-brass"><i class="fa-solid fa-plus"></i> Nouveau produit</a>
+        </div>
+      </div>
+
+      <div class="a-panel" style="margin-bottom:1.25rem;">
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+          <select class="a-field" style="margin:0; min-width:180px;" data-filter="category">
+            <option value="">Toutes les catégories</option>
+          </select>
+          <input class="a-field" style="margin:0; flex:1; min-width:200px;" type="search" placeholder="Rechercher un produit…" data-filter="q" />
+        </div>
+      </div>
+
+      <div class="a-table-wrap">
+        <table class="a-table">
+          <thead>
+            <tr><th></th><th>Nom</th><th>Catégorie</th><th>Prix</th><th>Variants</th><th>Stock total</th><th style="text-align:right;">Actions</th></tr>
+          </thead>
+          <tbody data-products-table>
+            <tr class="a-empty-row"><td colspan="7">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script>
+    let allProducts = [];
+
+    async function loadCategoryFilter() {
+      try {
+        const categories = await api.getCategories();
+        const select = document.querySelector("[data-filter='category']");
+        select.insertAdjacentHTML("beforeend", categories.map(c =>
+          `<option value="${c.slug}">${c.name}</option>`).join(""));
+      } catch { /* le filtre reste utilisable même si la liste ne charge pas */ }
+    }
+    loadCategoryFilter();
+
+    function stockBadge(total) {
+      if (total === 0) return `<span class="a-badge out">Rupture</span>`;
+      if (total < 10) return `<span class="a-badge low">${total} restants</span>`;
+      return `<span class="a-badge ok">${total} en stock</span>`;
+    }
+
+    function renderProducts(products) {
+      const tbody = document.querySelector("[data-products-table]");
+      if (!products.length) {
+        tbody.innerHTML = `<tr class="a-empty-row"><td colspan="7">Aucun produit. Clique sur "Nouveau produit" pour commencer.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = products.map(p => {
+        const totalStock = (p.variants || []).reduce((s, v) => s + v.stock, 0);
+        return `
+        <tr>
+          <td><img class="thumb" src="${p.image || '../assets/img/placeholder.svg'}" alt="" /></td>
+          <td class="prod-name">${p.name}</td>
+          <td>${p.category}</td>
+          <td>${Number(p.base_price).toFixed(2)} MAD</td>
+          <td>${(p.variants || []).length}</td>
+          <td>${stockBadge(totalStock)}</td>
+          <td>
+            <div class="row-actions">
+              <a href="product-form.html?id=${p.id}" class="a-btn a-btn-ghost a-btn-sm"><i class="fa-solid fa-pen"></i> Modifier</a>
+              <button class="a-btn a-btn-danger a-btn-sm" data-delete="${p.id}"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>`;
+      }).join("");
+
+      document.querySelectorAll("[data-delete]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("Supprimer ce produit ? Il sera désactivé du catalogue.")) return;
+          try {
+            await api.deleteProduct(btn.dataset.delete);
+            showToast("Produit supprimé.");
+            loadProducts();
+          } catch (err) {
+            showToast(err.message, "error");
+          }
+        });
+      });
+    }
+
+    function applyFilters() {
+      const category = document.querySelector("[data-filter='category']").value;
+      const q = document.querySelector("[data-filter='q']").value.toLowerCase();
+      const filtered = allProducts.filter(p =>
+        (!category || p.category === category) &&
+        (!q || p.name.toLowerCase().includes(q))
+      );
+      renderProducts(filtered);
+    }
+
+    async function loadProducts() {
+      try {
+        allProducts = await api.getProducts({ includeVariants: true, limit: 500 });
+        applyFilters();
+      } catch (err) {
+        document.querySelector("[data-products-table]").innerHTML =
+          `<tr class="a-empty-row"><td colspan="7">Erreur: ${err.message}</td></tr>`;
+      }
+    }
+
+    document.querySelectorAll("[data-filter]").forEach(el => el.addEventListener("input", applyFilters));
+    loadProducts();
+  </script>
+</body>
+</html>

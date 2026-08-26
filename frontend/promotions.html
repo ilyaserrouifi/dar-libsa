@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Promotions — DAMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <div data-include="partials/header.html"></div>
+
+  <main class="container">
+    <div class="promo-hero">
+      <span class="hero-eyebrow" style="color:var(--c-henna);">En ce moment</span>
+      <h1 class="section-title" style="font-size:2.2rem; margin-top:0.4rem;">Promotions</h1>
+      <p class="section-sub">Les prix baissent, les stocks sont limités — profites-en avant qu'ils ne remontent.</p>
+    </div>
+
+    <div class="product-grid" data-promo-grid style="padding-bottom:4rem;" aria-busy="true"></div>
+  </main>
+
+  <div data-include="partials/footer.html"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/product-card.js"></script>
+  <script src="js/partials.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const grid = document.querySelector("[data-promo-grid]");
+      try {
+        const products = await api.getProducts({ on_sale: "true", limit: 60 });
+        grid.innerHTML = products.length
+          ? products.map(renderProductCard).join("")
+          : `<p class="section-sub">Aucune promotion en ce moment — reviens bientôt.</p>`;
+      } catch (err) {
+        grid.innerHTML = `<p class="section-sub">Impossible de charger les promotions: ${err.message}</p>`;
+      } finally {
+        grid.removeAttribute("aria-busy");
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion — DAMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+  <div data-include="partials/header.html"></div>
+
+  <main class="container" style="max-width:420px; padding:3rem 1rem;">
+    <h1 class="section-title">Connexion</h1>
+    <form id="login-form">
+      <div class="field"><label>Email</label><input required type="email" name="email" /></div>
+      <div class="field"><label>Mot de passe</label><input required type="password" name="password" /></div>
+      <button class="btn" style="width:100%; justify-content:center;">Se connecter</button>
+      <p id="login-status" class="stock-note" style="display:none;"></p>
+    </form>
+    <p class="section-sub" style="margin-top:1rem;">Pas de compte ? <a href="register.html" style="color:var(--c-brass);">Créer un compte</a></p>
+  </main>
+
+  <div data-include="partials/footer.html"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/partials.js"></script>
+  <script>
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const status = document.getElementById("login-status");
+      const form = new FormData(e.target);
+      try {
+        const user = await Auth.login(form.get("email"), form.get("password"));
+        window.location.href = user.role === "admin" ? "admin/index.html" : "index.html";
+      } catch (err) {
+        status.textContent = err.message;
+        status.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>

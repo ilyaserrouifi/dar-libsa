@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DAMA — Vêtements & chaussures</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+  <style>
+    .promo-popup-overlay{
+      position:fixed; inset:0; background:rgba(20,16,14,0.55); z-index:999;
+      display:flex; align-items:center; justify-content:center; padding:1.2rem;
+      animation:promoFadeIn 0.25s ease;
+    }
+    @keyframes promoFadeIn{ from{ opacity:0; } to{ opacity:1; } }
+    .promo-popup{
+      background:#fff; border-radius:16px; max-width:440px; width:100%;
+      overflow:hidden; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.3);
+      animation:promoPopIn 0.3s ease;
+    }
+    @keyframes promoPopIn{ from{ transform:scale(0.94); opacity:0; } to{ transform:scale(1); opacity:1; } }
+    .promo-popup-close{
+      position:absolute; top:10px; right:10px; width:32px; height:32px; border-radius:50%;
+      background:rgba(0,0,0,0.55); color:#fff; border:none; font-size:0.85rem; cursor:pointer; z-index:1;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .promo-popup-close:hover{ background:rgba(0,0,0,0.8); }
+    #promo-popup-image{ width:100%; max-height:260px; object-fit:cover; display:block; }
+    .promo-popup-body{ padding:1.6rem 1.6rem 1.9rem; text-align:center; }
+    .promo-popup-body h2{ font-family:var(--f-display); font-size:1.4rem; margin:0 0 0.6rem; color:var(--c-ink,#2a241d); }
+    .promo-popup-body p{ font-size:0.92rem; color:#6b6558; margin:0 0 1.2rem; line-height:1.5; }
+  </style>
+</head>
+<body>
+
+  <div data-include="partials/header.html"></div>
+
+  <div class="promo-popup-overlay" id="promo-popup" style="display:none;">
+    <div class="promo-popup">
+      <button type="button" class="promo-popup-close" id="promo-popup-close" aria-label="Fermer">✕</button>
+      <img id="promo-popup-image" style="display:none;" alt="" />
+      <div class="promo-popup-body">
+        <h2 id="promo-popup-title"></h2>
+        <p id="promo-popup-desc"></p>
+        <a href="#" id="promo-popup-link" class="btn btn-brass" style="display:none;"></a>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <section class="hero-full" data-hero-full>
+      <div class="hero-media" data-hero-media></div>
+      <div class="hero-full-content">
+        <span class="hero-eyebrow" data-hero-eyebrow>Collection en cours</span>
+        <h1 data-hero-title>Des pièces taillées pour la vie de tous les jours.</h1>
+        <p data-hero-subtitle>T-shirts, sacs, chaussures et sandales — chaque produit se voit en 3D avant d'être dans votre panier.</p>
+        <a href="products.html" class="btn btn-brass">Voir la collection</a>
+      </div>
+    </section>
+
+    <div class="zellige-divider"></div>
+
+    <section class="container" style="padding: 3rem 0; display:none;" data-promo-section>
+      <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+        <div>
+          <h2 class="section-title" style="color:var(--c-henna);">Promotions</h2>
+          <p class="section-sub">Profites-en avant qu'elles ne s'arrêtent.</p>
+        </div>
+        <a href="promotions.html" class="btn btn-outline" style="border-color:var(--c-henna); color:var(--c-henna);">Voir tout</a>
+      </div>
+      <div class="product-grid" data-promo-grid></div>
+    </section>
+
+    <section class="container" style="padding: 3.5rem 0;">
+      <h2 class="section-title">Catégories</h2>
+      <p class="section-sub">Des familles de produits, une seule exigence de qualité.</p>
+      <div class="cat-grid" data-cat-grid-home>
+        <div class="cat-card"><span class="num">—</span><h3>Chargement…</h3></div>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 4rem;">
+      <h2 class="section-title">Nouveautés</h2>
+      <p class="section-sub">Les derniers arrivages, en stock.</p>
+      <div class="product-grid" data-product-grid aria-busy="true"></div>
+    </section>
+    <section class="container visit-section" data-visit-section style="display:none;">
+      <h2 class="section-title">Nous trouver</h2>
+      <p class="section-sub">Passez à la boutique ou contactez-nous directement.</p>
+      <div class="visit-card">
+        <div class="visit-info">
+          <h3>DAMA</h3>
+          <div class="row" data-visit-address style="display:none;"><i class="fa-solid fa-location-dot"></i><span></span></div>
+          <div class="row" data-visit-hours style="display:none;"><i class="fa-solid fa-clock"></i><span></span></div>
+          <div class="row" data-visit-phone style="display:none;"><i class="fa-solid fa-phone"></i><span></span></div>
+          <a href="#" class="btn btn-brass" data-visit-whatsapp style="display:none;"><i class="fa-brands fa-whatsapp"></i> Discuter sur WhatsApp</a>
+        </div>
+        <div class="visit-map" data-visit-map></div>
+      </div>
+    </section>
+  </main>
+
+  <div data-include="partials/footer.html"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/product-card.js"></script>
+  <script src="js/partials.js"></script>
+  <script>
+    document.addEventListener("settings:loaded", (e) => {
+      const s = e.detail;
+      if (s.hero_eyebrow) document.querySelector("[data-hero-eyebrow]").textContent = s.hero_eyebrow;
+      if (s.hero_title) document.querySelector("[data-hero-title]").textContent = s.hero_title;
+      if (s.hero_subtitle) document.querySelector("[data-hero-subtitle]").textContent = s.hero_subtitle;
+
+      const heroFull = document.querySelector("[data-hero-full]");
+      const media = document.querySelector("[data-hero-media]");
+      let images = [];
+      try { images = JSON.parse(s.hero_images || "[]"); } catch { images = []; }
+      if (!images.length && s.hero_image) images = [s.hero_image];
+
+      if (s.hero_video) {
+        heroFull.classList.add("has-media");
+        media.innerHTML = `<video src="${s.hero_video}" autoplay muted loop playsinline></video>`;
+      } else if (images.length) {
+        heroFull.classList.add("has-media");
+        media.innerHTML = images
+          .map((url, i) => `<div class="hero-slide ${i === 0 ? "active" : ""}" style="background-image:url('${url}')"></div>`)
+          .join("");
+        if (images.length > 1) {
+          let i = 0;
+          setInterval(() => {
+            const slides = media.querySelectorAll(".hero-slide");
+            slides[i].classList.remove("active");
+            i = (i + 1) % slides.length;
+            slides[i].classList.add("active");
+          }, 4000);
+        }
+      }
+
+      // ---------- Section "Nous trouver" ----------
+      const visitSection = document.querySelector("[data-visit-section]");
+      if (s.address || s.phone || s.whatsapp) {
+        visitSection.style.display = "block";
+
+        if (s.address) {
+          const row = document.querySelector("[data-visit-address]");
+          row.style.display = "flex";
+          row.querySelector("span").textContent = s.address;
+        }
+        if (s.horaires) {
+          const row = document.querySelector("[data-visit-hours]");
+          row.style.display = "flex";
+          row.querySelector("span").textContent = s.horaires;
+        }
+        if (s.phone) {
+          const row = document.querySelector("[data-visit-phone]");
+          row.style.display = "flex";
+          row.querySelector("span").textContent = s.phone;
+        }
+        if (s.whatsapp) {
+          const btn = document.querySelector("[data-visit-whatsapp]");
+          btn.style.display = "inline-flex";
+          btn.href = `https://wa.me/${s.whatsapp.replace(/\D/g, "")}`;
+        }
+        if (s.address) {
+          document.querySelector("[data-visit-map]").innerHTML =
+            `<iframe src="https://www.google.com/maps?q=${encodeURIComponent(s.address)}&output=embed" loading="lazy" allowfullscreen title="Localisation DAMA"></iframe>`;
+        }
+      }
+    });
+
+    document.addEventListener("categories:loaded", (e) => {
+      const grid = document.querySelector("[data-cat-grid-home]");
+      const categories = e.detail || [];
+      if (!categories.length) {
+        grid.innerHTML = '<p class="section-sub">Catégories à venir.</p>';
+        return;
+      }
+      grid.innerHTML = categories.map((c, i) => `
+        <a class="cat-card" href="products.html?category=${c.slug}" ${c.image ? `style="background-image:url('${c.image}');"` : ""}>
+          <span class="num">${String(i + 1).padStart(2, "0")}</span>
+          <h3><i class="fa-solid ${c.icon || "fa-shirt"}"></i> ${c.name}</h3>
+          <p>${c.product_count} produit${c.product_count > 1 ? "s" : ""}</p>
+        </a>`).join("");
+    });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      // ---------- Popup promo (une fois par visite) ----------
+      const SEEN_KEY = "dl_promo_seen";
+      try {
+        if (!sessionStorage.getItem(SEEN_KEY)) {
+          const promos = await api.getPromotions();
+          const promo = (promos || []).find((p) => p.active);
+          if (promo) {
+            const overlay = document.getElementById("promo-popup");
+            document.getElementById("promo-popup-title").textContent = promo.title;
+            const descEl = document.getElementById("promo-popup-desc");
+            if (promo.description) { descEl.textContent = promo.description; descEl.style.display = "block"; }
+            else { descEl.style.display = "none"; }
+            const imgEl = document.getElementById("promo-popup-image");
+            if (promo.image) { imgEl.src = promo.image; imgEl.style.display = "block"; }
+            const linkEl = document.getElementById("promo-popup-link");
+            if (promo.link_url) {
+              linkEl.href = promo.link_url;
+              linkEl.textContent = promo.link_label || "Voir l'offre";
+              linkEl.style.display = "inline-flex";
+            }
+            overlay.style.display = "flex";
+            sessionStorage.setItem(SEEN_KEY, "true");
+          }
+        }
+      } catch {
+        // Pas grave si le popup ne charge pas — le reste de la page continue.
+      }
+      const closePopup = () => document.getElementById("promo-popup").style.display = "none";
+      document.getElementById("promo-popup-close").addEventListener("click", closePopup);
+      document.getElementById("promo-popup").addEventListener("click", (e) => {
+        if (e.target.id === "promo-popup") closePopup();
+      });
+
+      const promoSection = document.querySelector("[data-promo-section]");
+      const promoGrid = document.querySelector("[data-promo-grid]");
+      try {
+        const promoProducts = await api.getProducts({ on_sale: "true", limit: 4 });
+        if (promoProducts.length) {
+          promoGrid.innerHTML = promoProducts.map(renderProductCard).join("");
+          promoSection.style.display = "block";
+        }
+      } catch {
+        // Pas grave si les promos ne chargent pas — le reste de la page continue.
+      }
+
+      const grid = document.querySelector("[data-product-grid]");
+      try {
+        const products = await api.getProducts({ sort: "newest", limit: 8 });
+        grid.innerHTML = products.length
+          ? products.map(renderProductCard).join("")
+          : '<p class="section-sub">Le catalogue arrive bientôt.</p>';
+      } catch {
+        grid.innerHTML = '<p class="section-sub">Le catalogue arrive bientôt.</p>';
+      } finally {
+        grid.removeAttribute("aria-busy");
+      }
+    });
+  </script>
+</body>
+</html>

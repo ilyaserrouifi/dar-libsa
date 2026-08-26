@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Commande — DAMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <div data-include="partials/header.html"></div>
+
+  <main class="container">
+    <div class="checkout-grid">
+      <form id="checkout-form">
+        <h1 class="section-title">Livraison</h1>
+        <div class="field-row">
+          <div class="field"><label>Prénom</label><input required name="firstName" /></div>
+          <div class="field"><label>Nom</label><input required name="lastName" /></div>
+        </div>
+        <div class="field"><label>Email</label><input required type="email" name="email" /></div>
+        <div class="field"><label>Téléphone</label><input required name="phone" /></div>
+        <div class="field"><label>Adresse</label><input required name="address" /></div>
+        <div class="field-row">
+          <div class="field"><label>Ville</label><input required name="city" /></div>
+          <div class="field"><label>Code postal</label><input name="zip" /></div>
+        </div>
+        <button type="submit" class="btn" style="width:100%; justify-content:center; margin-top:1rem;">
+          Confirmer la commande
+        </button>
+        <p id="checkout-status" class="stock-note" style="display:none;"></p>
+      </form>
+
+      <div class="cart-summary">
+        <h2 class="section-title" style="font-size:1.3rem;">Résumé</h2>
+        <div id="checkout-lines"></div>
+        <div class="summary-row total"><span>Total</span><span data-total>0.00 MAD</span></div>
+      </div>
+    </div>
+  </main>
+
+  <div data-include="partials/footer.html"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/partials.js"></script>
+  <script>
+    function renderSummary() {
+      const items = Cart.items();
+      document.getElementById("checkout-lines").innerHTML = items.map(i => `
+        <div class="summary-row"><span>${i.name} (${i.size}) ×${i.quantity}</span><span>${(i.price * i.quantity).toFixed(2)} MAD</span></div>
+      `).join("");
+      document.querySelector("[data-total]").textContent = `${Cart.subtotal().toFixed(2)} MAD`;
+    }
+
+    document.getElementById("checkout-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const status = document.getElementById("checkout-status");
+      const items = Cart.items();
+      if (!items.length) {
+        status.textContent = "Votre panier est vide.";
+        status.style.display = "block";
+        return;
+      }
+      const form = new FormData(e.target);
+      try {
+        await api.createOrder({
+          customer: Object.fromEntries(form.entries()),
+          items: items.map(i => ({ variantId: i.variantId, quantity: i.quantity })),
+        });
+        Cart.clear();
+        status.style.color = "var(--c-indigo)";
+        status.textContent = "Commande confirmée ! Vous recevrez un email de confirmation.";
+        status.style.display = "block";
+        e.target.reset();
+      } catch (err) {
+        status.textContent = `Erreur: ${err.message}`;
+        status.style.display = "block";
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", renderSummary);
+  </script>
+</body>
+</html>

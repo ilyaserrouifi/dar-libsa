@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "buildCommand": null,
+  "functions": {
+    "api/index.js": { "maxDuration": 30 }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/admin", "destination": "/frontend/admin/index.html" },
+    { "source": "/((?!api/).*)", "destination": "/frontend/$1" }
+  ]
+}

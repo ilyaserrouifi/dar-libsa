@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Commandes — Admin DAMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+</head>
+<body data-page="orders">
+  <div class="admin-shell">
+    <div data-admin-sidebar></div>
+
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <div>
+          <h1>Commandes</h1>
+          <p class="sub">Suivi et mise à jour du statut des commandes clients.</p>
+        </div>
+      </div>
+
+      <div class="a-table-wrap">
+        <table class="a-table">
+          <thead>
+            <tr><th>Commande</th><th>Client</th><th>Email</th><th>Total</th><th>Statut</th><th>Date</th></tr>
+          </thead>
+          <tbody data-orders-table>
+            <tr class="a-empty-row"><td colspan="6">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- ---------- Modal détail commande ---------- -->
+  <div class="a-modal-overlay" id="order-modal" style="display:none;">
+    <div class="a-modal" style="max-width:560px;">
+      <h2>Commande <span id="od-id"></span></h2>
+
+      <div class="a-field-row">
+        <div class="a-field">
+          <label>Client</label>
+          <div id="od-name" style="color:var(--ink); font-size:0.9rem;">—</div>
+        </div>
+        <div class="a-field">
+          <label>Téléphone</label>
+          <div id="od-phone" style="color:var(--ink); font-size:0.9rem;">—</div>
+        </div>
+      </div>
+
+      <div class="a-field">
+        <label>Email</label>
+        <div id="od-email" style="color:var(--ink); font-size:0.9rem;">—</div>
+      </div>
+
+      <div class="a-field">
+        <label>Adresse de livraison</label>
+        <div id="od-address" style="color:var(--ink); font-size:0.9rem; line-height:1.5;">—</div>
+      </div>
+
+      <div class="a-field">
+        <label>Articles</label>
+        <div id="od-items" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+      </div>
+
+      <div class="a-field-row">
+        <div class="a-field">
+          <label>Total</label>
+          <div id="od-total" style="color:var(--brass); font-weight:600; font-size:1rem;">—</div>
+        </div>
+        <div class="a-field">
+          <label>Date</label>
+          <div id="od-date" style="color:var(--ink); font-size:0.9rem;">—</div>
+        </div>
+      </div>
+
+      <div class="a-modal-actions">
+        <button class="a-btn a-btn-ghost" id="order-close-btn">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script>
+    const STATUSES = ["pending", "paid", "shipped", "delivered", "cancelled"];
+    const STATUS_CLASS = { paid: "ok", shipped: "ok", delivered: "ok", pending: "low", cancelled: "out" };
+
+    async function loadOrders() {
+      try {
+        const orders = await api.getOrders();
+        const tbody = document.querySelector("[data-orders-table]");
+        if (!orders.length) {
+          tbody.innerHTML = `<tr class="a-empty-row"><td colspan="6">Aucune commande pour l'instant.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = orders.map(o => `
+          <tr data-order-row="${o.id}" style="cursor:pointer;">
+            <td class="prod-name">#${o.id}</td>
+            <td>${o.customer_name || "—"}</td>
+            <td>${o.customer_email || "—"}</td>
+            <td>${Number(o.total).toFixed(2)} MAD</td>
+            <td>
+              <select class="a-badge ${STATUS_CLASS[o.status] || 'neutral'}" style="border:1px solid var(--border-soft); background:var(--bg-panel-2); padding:0.3rem 0.5rem;" data-status="${o.id}">
+                ${STATUSES.map(s => `<option value="${s}" ${s === o.status ? "selected" : ""}>${s}</option>`).join("")}
+              </select>
+            </td>
+            <td>${new Date(o.created_at).toLocaleDateString('fr-FR')}</td>
+          </tr>`).join("");
+
+        // Le select ne doit pas ouvrir le modal — on stoppe la propagation du clic.
+        document.querySelectorAll("[data-status]").forEach(sel => {
+          sel.addEventListener("click", (e) => e.stopPropagation());
+          sel.addEventListener("change", async () => {
+            try {
+              await api.updateOrderStatus(sel.dataset.status, sel.value);
+              showToast(`Commande #${sel.dataset.status} mise à jour.`);
+            } catch (err) {
+              showToast(err.message, "error");
+            }
+          });
+        });
+
+        // Clic sur la ligne (hors select) → ouvre le détail complet de la commande.
+        document.querySelectorAll("[data-order-row]").forEach(row => {
+          row.addEventListener("click", () => openOrderModal(row.dataset.orderRow));
+        });
+      } catch (err) {
+        document.querySelector("[data-orders-table]").innerHTML =
+          `<tr class="a-empty-row"><td colspan="6">Erreur: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function openOrderModal(id) {
+      const modal = document.getElementById("order-modal");
+      modal.style.display = "flex";
+      document.getElementById("od-id").textContent = `#${id}`;
+      document.getElementById("od-items").innerHTML = `<p class="a-loading-note">Chargement…</p>`;
+      try {
+        const o = await api.getOrder(id);
+        document.getElementById("od-name").textContent = o.customer_name || "—";
+        document.getElementById("od-phone").textContent = o.customer_phone || "—";
+        document.getElementById("od-email").textContent = o.customer_email || "—";
+
+        const addr = o.shipping_address || {};
+        document.getElementById("od-address").textContent =
+          [addr.address, addr.city, addr.zip].filter(Boolean).join(", ") || "—";
+
+        document.getElementById("od-total").textContent = `${Number(o.total).toFixed(2)} MAD`;
+        document.getElementById("od-date").textContent = new Date(o.created_at).toLocaleDateString('fr-FR');
+
+        const itemsEl = document.getElementById("od-items");
+        if (!o.items || !o.items.length) {
+          itemsEl.innerHTML = `<p class="a-loading-note">Aucun article.</p>`;
+        } else {
+          itemsEl.innerHTML = o.items.map(it => `
+            <div style="display:flex; align-items:center; gap:0.7rem; padding:0.5rem; background:var(--bg-panel-2); border-radius:var(--radius-sm);">
+              <img src="${it.product_image || '../assets/img/placeholder.svg'}" alt="" style="width:42px; height:42px; object-fit:cover; border-radius:6px;" />
+              <div style="flex:1;">
+                <div style="color:var(--ink); font-size:0.85rem;">${it.product_name}</div>
+                <div style="color:var(--ink-mute); font-size:0.75rem;">${it.size} · ${it.color} · x${it.quantity}</div>
+              </div>
+              <div style="color:var(--ink); font-size:0.85rem;">${Number(it.price).toFixed(2)} MAD</div>
+            </div>`).join("");
+        }
+      } catch (err) {
+        document.getElementById("od-items").innerHTML = `<p class="a-loading-note">Erreur: ${err.message}</p>`;
+      }
+    }
+
+    document.getElementById("order-close-btn").addEventListener("click", () => {
+      document.getElementById("order-modal").style.display = "none";
+    });
+    document.getElementById("order-modal").addEventListener("click", (e) => {
+      if (e.target.id === "order-modal") document.getElementById("order-modal").style.display = "none";
+    });
+
+    loadOrders();
+  </script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Promotions — Admin DAMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  <style>
+    .promo-grid-admin{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1rem; }
+    .promo-card-admin{
+      background:var(--bg-panel); border:1px solid var(--border-soft); border-radius:var(--radius-md);
+      overflow:hidden; display:flex; flex-direction:column;
+    }
+    .promo-card-admin.inactive{ opacity:0.55; }
+    .promo-cover{
+      height:120px; background:var(--bg-panel-2); position:relative;
+      display:flex; align-items:center; justify-content:center; overflow:hidden;
+    }
+    .promo-cover img{ width:100%; height:100%; object-fit:cover; }
+    .promo-cover i{ font-size:1.8rem; color:var(--brass-dim); }
+    .promo-status{
+      position:absolute; top:8px; right:8px; font-family:var(--f-mono); font-size:0.65rem;
+      padding:0.15rem 0.5rem; border-radius:99px; background:rgba(11,14,20,0.75); color:#fff;
+    }
+    .promo-status.on{ color:#7fd39a; }
+    .promo-status.off{ color:#e28d8d; }
+    .promo-body{ padding:1rem 1.1rem 1.1rem; display:flex; flex-direction:column; gap:0.35rem; flex:1; }
+    .promo-body .name{ font-family:var(--f-display); font-size:1.02rem; color:var(--ink); }
+    .promo-body .desc{ font-size:0.8rem; color:var(--ink-mute); line-height:1.4; max-height:2.8em; overflow:hidden; }
+    .promo-actions{ display:flex; gap:0.4rem; margin-top:auto; padding-top:0.7rem; }
+    .promo-actions .a-btn{ flex:1; justify-content:center; }
+    .cover-drop{ aspect-ratio:16/9; }
+  </style>
+</head>
+<body data-page="promotions">
+  <div class="admin-shell">
+    <div data-admin-sidebar></div>
+
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <div>
+          <h1>Promotions</h1>
+          <p class="sub">Une promo active s'affiche en popup à l'arrivée sur l'accueil (une fois par visite) et sur la page /promotions.html.</p>
+        </div>
+        <div class="admin-topbar-actions">
+          <button class="a-btn a-btn-brass" id="new-promo-btn"><i class="fa-solid fa-plus"></i> Nouvelle promotion</button>
+        </div>
+      </div>
+
+      <div class="promo-grid-admin" data-promo-grid>
+        <p class="a-loading-note">Chargement…</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- ---------- Modal ajout / édition ---------- -->
+  <div class="a-modal-overlay" id="promo-modal" style="display:none;">
+    <div class="a-modal">
+      <h2 data-modal-title>Nouvelle promotion</h2>
+      <input type="hidden" id="f-promo-id" />
+      <div class="a-field">
+        <label>Titre</label>
+        <input type="text" id="f-promo-title" placeholder="Ex: -20% sur les sacs cette semaine" />
+      </div>
+      <div class="a-field">
+        <label>Description</label>
+        <textarea id="f-promo-description" placeholder="Détail court de l'offre…"></textarea>
+      </div>
+      <div class="a-field" style="margin:0 0 1rem;">
+        <label>Image (optionnel)</label>
+        <label class="img-drop cover-drop" id="promo-cover-drop">
+          <img id="promo-cover-preview" style="display:none;" alt="" />
+          <div id="promo-cover-placeholder">
+            <i class="fa-solid fa-image"></i>
+            <div>Clique pour choisir une image</div>
+          </div>
+          <input type="file" id="f-promo-cover-file" accept="image/*" />
+          <div class="drop-status" id="promo-cover-status" style="display:none;"></div>
+        </label>
+        <button type="button" class="a-btn a-btn-ghost a-btn-sm" id="clear-promo-cover" style="margin-top:0.6rem; width:100%;">
+          <i class="fa-solid fa-xmark"></i> Retirer l'image
+        </button>
+      </div>
+      <div class="a-field-row">
+        <div class="a-field">
+          <label>Lien du bouton (optionnel)</label>
+          <input type="text" id="f-promo-link-url" placeholder="products.html?category=sacs" />
+        </div>
+        <div class="a-field">
+          <label>Texte du bouton</label>
+          <input type="text" id="f-promo-link-label" placeholder="Voir la collection" />
+        </div>
+      </div>
+      <div class="a-toggle-row" style="margin:0.2rem 0 1rem;">
+        <input type="checkbox" id="f-promo-active" checked />
+        <label for="f-promo-active" style="margin:0; text-transform:none; letter-spacing:0; font-size:0.85rem; color:var(--ink-soft);">
+          Promotion active (visible en popup sur l'accueil)
+        </label>
+      </div>
+      <div class="a-modal-actions">
+        <button class="a-btn a-btn-ghost" id="promo-cancel-btn">Annuler</button>
+        <button class="a-btn a-btn-brass" id="promo-save-btn"><i class="fa-solid fa-check"></i> Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/image-compress.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script>
+    let promotions = [];
+    let promoCoverUrl = "";
+
+    function renderPromotions() {
+      const grid = document.querySelector("[data-promo-grid]");
+      if (!promotions.length) {
+        grid.innerHTML = `<p class="a-loading-note">Aucune promotion. Clique sur "Nouvelle promotion" pour commencer.</p>`;
+        return;
+      }
+      grid.innerHTML = promotions.map(p => `
+        <div class="promo-card-admin ${p.active ? "" : "inactive"}">
+          <div class="promo-cover">
+            ${p.image ? `<img src="${p.image}" alt="" />` : `<i class="fa-solid fa-bullhorn"></i>`}
+            <span class="promo-status ${p.active ? "on" : "off"}">${p.active ? "Active" : "Désactivée"}</span>
+          </div>
+          <div class="promo-body">
+            <div class="name">${p.title}</div>
+            ${p.description ? `<div class="desc">${p.description}</div>` : ""}
+            <div class="promo-actions">
+              <button class="a-btn a-btn-ghost a-btn-sm" data-edit="${p.id}"><i class="fa-solid fa-pen"></i> Modifier</button>
+              <button class="a-btn a-btn-danger a-btn-sm" data-delete="${p.id}"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+        </div>`).join("");
+
+      grid.querySelectorAll("[data-edit]").forEach(btn => {
+        btn.addEventListener("click", () => openModal(promotions.find(p => p.id == btn.dataset.edit)));
+      });
+      grid.querySelectorAll("[data-delete]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("Supprimer cette promotion ?")) return;
+          try {
+            await api.deletePromotion(btn.dataset.delete);
+            showToast("Promotion supprimée.");
+            loadPromotions();
+          } catch (err) {
+            showToast(err.message, "error");
+          }
+        });
+      });
+    }
+
+    async function loadPromotions() {
+      try {
+        promotions = await api.getPromotions();
+        renderPromotions();
+      } catch (err) {
+        document.querySelector("[data-promo-grid]").innerHTML =
+          `<p class="a-loading-note">Erreur: ${err.message}</p>`;
+      }
+    }
+    loadPromotions();
+
+    // ---------- Modal ----------
+    const modal = document.getElementById("promo-modal");
+
+    function setPromoCoverPreview(url) {
+      promoCoverUrl = url || "";
+      const preview = document.getElementById("promo-cover-preview");
+      const placeholder = document.getElementById("promo-cover-placeholder");
+      if (url) {
+        preview.src = url; preview.style.display = "block";
+        placeholder.style.display = "none";
+      } else {
+        preview.style.display = "none"; placeholder.style.display = "flex";
+      }
+    }
+
+    function openModal(promo) {
+      document.querySelector("[data-modal-title]").textContent = promo ? "Modifier la promotion" : "Nouvelle promotion";
+      document.getElementById("f-promo-id").value = promo?.id || "";
+      document.getElementById("f-promo-title").value = promo?.title || "";
+      document.getElementById("f-promo-description").value = promo?.description || "";
+      document.getElementById("f-promo-link-url").value = promo?.link_url || "";
+      document.getElementById("f-promo-link-label").value = promo?.link_label || "";
+      document.getElementById("f-promo-active").checked = promo ? !!promo.active : true;
+      setPromoCoverPreview(promo?.image || "");
+      modal.style.display = "flex";
+    }
+    function closeModal() { modal.style.display = "none"; }
+
+    document.getElementById("new-promo-btn").addEventListener("click", () => openModal(null));
+    document.getElementById("promo-cancel-btn").addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+
+    document.getElementById("f-promo-cover-file").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const status = document.getElementById("promo-cover-status");
+      status.style.display = "block"; status.textContent = "Compression de l'image…";
+      try {
+        const dataUrl = await compressImageFile(file, 1200, 0.78);
+        setPromoCoverPreview(dataUrl);
+        status.style.display = "none";
+      } catch (err) {
+        status.style.display = "none";
+        showToast(err.message, "error");
+      }
+    });
+    document.getElementById("clear-promo-cover").addEventListener("click", () => setPromoCoverPreview(""));
+
+    document.getElementById("promo-save-btn").addEventListener("click", async () => {
+      const btn = document.getElementById("promo-save-btn");
+      const id = document.getElementById("f-promo-id").value;
+      const title = document.getElementById("f-promo-title").value.trim();
+      if (!title) { showToast("Le titre est requis.", "error"); return; }
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enregistrement…`;
+      try {
+        const payload = {
+          title,
+          description: document.getElementById("f-promo-description").value.trim(),
+          image: promoCoverUrl,
+          link_url: document.getElementById("f-promo-link-url").value.trim(),
+          link_label: document.getElementById("f-promo-link-label").value.trim(),
+          active: document.getElementById("f-promo-active").checked,
+        };
+        if (id) await api.updatePromotion(id, payload);
+        else await api.createPromotion(payload);
+        showToast("Promotion enregistrée.");
+        closeModal();
+        loadPromotions();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> Enregistrer`;
+      }
+    });
+  </script>
+</body>
+</html>

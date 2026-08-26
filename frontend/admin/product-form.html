@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Produit — Admin DAMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+</head>
+<body data-page="products">
+  <div class="admin-shell">
+    <div data-admin-sidebar></div>
+
+    <main class="admin-main">
+      <div class="a-breadcrumb"><a href="products.html">Produits</a> / <span data-breadcrumb-current>Nouveau produit</span></div>
+      <div class="admin-topbar">
+        <div>
+          <h1 data-form-title>Nouveau produit</h1>
+          <p class="sub">Renseigne les informations, l'image, et les combinaisons taille/couleur.</p>
+        </div>
+        <div class="admin-topbar-actions">
+          <a href="products.html" class="a-btn a-btn-ghost">Annuler</a>
+          <button class="a-btn a-btn-brass" id="save-btn"><i class="fa-solid fa-check"></i> Enregistrer</button>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div>
+          <div class="a-panel">
+            <h2>Informations générales</h2>
+            <div class="a-field">
+              <label>Nom du produit</label>
+              <input type="text" id="f-name" placeholder="Ex: T-shirt col rond Atlas" required />
+            </div>
+            <div class="a-field-row">
+              <div class="a-field">
+                <label>Catégorie</label>
+                <select id="f-category" required>
+                  <option value="">— Choisir —</option>
+                </select>
+              </div>
+              <div class="a-field">
+                <label>Prix de base (MAD)</label>
+                <input type="number" id="f-price" min="0" step="0.01" placeholder="0.00" required />
+              </div>
+            </div>
+            <div class="a-field-row">
+              <div class="a-field">
+                <label>Ancien prix (optionnel — pour afficher une promo)</label>
+                <input type="number" id="f-old-price" min="0" step="0.01" placeholder="Ex: 249.00" />
+              </div>
+              <div class="a-field">
+                <label>Étiquette</label>
+                <select id="f-badge">
+                  <option value="">Aucune</option>
+                  <option value="Promo">Promo</option>
+                  <option value="Nouveau">Nouveau</option>
+                  <option value="Best-seller">Best-seller</option>
+                  <option value="Édition limitée">Édition limitée</option>
+                </select>
+              </div>
+            </div>
+            <div class="a-field">
+              <label>Description</label>
+              <textarea id="f-description" placeholder="Coupe, esprit de la pièce…"></textarea>
+            </div>
+            <div class="a-toggle-row">
+              <input type="checkbox" id="f-active" checked />
+              <label for="f-active" style="margin:0; text-transform:none; letter-spacing:0; font-size:0.85rem; color:var(--ink-soft);">
+                Produit actif (visible sur la boutique)
+              </label>
+            </div>
+          </div>
+
+          <div class="a-panel">
+            <h2>Caractéristiques techniques</h2>
+            <p class="a-field hint" style="margin-top:-0.5rem; margin-bottom:1rem;">Affichées dans un tableau sur la fiche produit. Laisser vide les lignes non utilisées.</p>
+            <div class="a-field-row">
+              <div class="a-field"><label>Matière</label><input type="text" id="f-detail-matiere" placeholder="Coton bio, cuir…" /></div>
+              <div class="a-field"><label>Dimensions</label><input type="text" id="f-detail-dimensions" placeholder="Ex: 30x20x12 cm" /></div>
+            </div>
+            <div class="a-field-row" style="margin:0;">
+              <div class="a-field" style="margin:0;"><label>Entretien</label><input type="text" id="f-detail-entretien" placeholder="Lavage à la main…" /></div>
+              <div class="a-field" style="margin:0;"><label>Origine / façonnage</label><input type="text" id="f-detail-origine" placeholder="Fabriqué au Maroc…" /></div>
+            </div>
+          </div>
+
+          <div class="a-panel">
+            <h2>Variantes — taille, couleur, stock</h2>
+            <table class="variant-table">
+              <thead>
+                <tr><th style="width:26%;">Taille</th><th style="width:26%;">Couleur</th><th style="width:18%;">Stock</th><th style="width:22%;">SKU (optionnel)</th><th></th></tr>
+              </thead>
+              <tbody id="variant-rows"></tbody>
+            </table>
+            <button type="button" class="variant-add" id="add-variant-row"><i class="fa-solid fa-circle-plus"></i> Ajouter une combinaison</button>
+            <p class="a-field hint" style="margin-top:0.75rem;">
+              Chaque ligne = une combinaison taille + couleur avec son propre stock. Exemple: "M" / "Indigo" / 12 en stock.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <div class="a-panel">
+            <h2>Image produit</h2>
+            <label class="img-drop" id="img-drop">
+              <img id="img-preview" style="display:none;" alt="" />
+              <div id="img-placeholder">
+                <i class="fa-solid fa-image"></i>
+                <div>Clique pour choisir une image</div>
+                <div class="hint">JPG, PNG — utilisée sur la boutique</div>
+              </div>
+              <input type="file" id="f-image-file" accept="image/*" />
+              <div class="drop-status" id="img-status" style="display:none;"></div>
+            </label>
+          </div>
+
+          <div class="a-panel">
+            <h2>Galerie photo</h2>
+            <p class="a-field hint" style="margin-top:-0.5rem; margin-bottom:0.9rem;">Photos supplémentaires affichées en miniatures sur la fiche produit.</p>
+            <div id="gallery-thumbs" style="display:flex; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.9rem;"></div>
+            <label class="img-drop" id="gallery-drop" style="height:110px;">
+              <div id="gallery-placeholder">
+                <i class="fa-solid fa-images"></i>
+                <div>Ajouter une photo à la galerie</div>
+              </div>
+              <input type="file" id="f-gallery-file" accept="image/*" multiple />
+              <div class="drop-status" id="gallery-status" style="display:none;"></div>
+            </label>
+          </div>
+
+          <div class="a-panel">
+            <h2>Galerie vidéo</h2>
+            <p class="a-field hint" style="margin-top:-0.5rem; margin-bottom:0.9rem;">Vidéos affichées sur la fiche produit (à côté des photos). L'envoi se fait directement vers le stockage, donc les vidéos de téléphone (20-100+ Mo) passent sans problème.</p>
+            <div id="video-gallery-list" style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:0.9rem;"></div>
+            <label class="a-btn a-btn-ghost" style="width:100%; justify-content:center; cursor:pointer;" id="gallery-video-drop">
+              <i class="fa-solid fa-video"></i>&nbsp; Ajouter une vidéo à la galerie
+              <input type="file" id="f-gallery-video-file" accept="video/*" multiple style="display:none;" />
+            </label>
+            <div id="gallery-video-status" class="a-field hint" style="display:none; margin-top:0.6rem;"></div>
+          </div>
+
+          <div class="a-panel">
+            <h2>Visionneuse 3D</h2>
+            <div class="a-field" style="margin:0;">
+              <label>URL du modèle (.glb / .gltf)</label>
+              <input type="text" id="f-model3d" placeholder="https://…modele.glb" />
+              <p class="hint">Si renseignée, la fiche produit affiche la visionneuse 3D à la place de l'image. Sinon l'image ci-dessus est utilisée.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="../js/image-compress.js"></script>
+  <script type="module" src="../js/blob-upload.js"></script>
+  <script>
+    const productId = new URLSearchParams(window.location.search).get("id");
+    let uploadedImageUrl = null;
+    let removedVariantIds = [];
+    let galleryImages = [];
+    let galleryVideos = [];
+
+    // ---------- Galerie vidéo ----------
+    function renderVideoGalleryList() {
+      const wrap = document.getElementById("video-gallery-list");
+      wrap.innerHTML = galleryVideos.map((url, i) => `
+        <div style="display:flex; align-items:center; gap:0.6rem; padding:0.5rem 0.6rem; border:1px solid var(--border-soft); border-radius:var(--radius-sm,4px);">
+          <i class="fa-solid fa-video" style="color:var(--brass-dim,#a8823a);"></i>
+          <span style="flex:1; font-size:0.8rem; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${url}</span>
+          <button type="button" data-remove-video="${i}" title="Retirer"
+            style="width:22px; height:22px; border-radius:50%; border:none; background:var(--ink); color:#fff; font-size:0.7rem; cursor:pointer; flex-shrink:0;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>`).join("");
+      wrap.querySelectorAll("[data-remove-video]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          galleryVideos.splice(parseInt(btn.dataset.removeVideo, 10), 1);
+          renderVideoGalleryList();
+        });
+      });
+    }
+
+    document.getElementById("f-gallery-video-file").addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
+      const status = document.getElementById("gallery-video-status");
+      status.style.display = "block";
+      for (const file of files) {
+        status.textContent = `Envoi de ${file.name}… démarrage…`;
+        // Sur iPhone/iPad, uploadLargeFile ne peut pas remonter de % (voir
+        // blob-upload.js) : on affiche donc un indicateur "en cours" avec le
+        // temps écoulé, pour que ça ne semble pas figé pendant l'envoi (qui
+        // peut prendre 1-2 minutes pour une vidéo de téléphone).
+        let progressReceived = false;
+        let elapsed = 0;
+        const ticker = setInterval(() => {
+          if (progressReceived) return;
+          elapsed += 1;
+          status.textContent = `Envoi de ${file.name}… en cours (${elapsed}s — ne quittez pas la page)`;
+        }, 1000);
+        try {
+          // uploadLargeFile envoie directement au stockage Vercel Blob depuis le
+          // navigateur — indispensable pour les vidéos, souvent au-delà de la
+          // limite de 4.5 Mo des fonctions serverless de Vercel.
+          const result = await window.uploadLargeFile(file, (pct) => {
+            progressReceived = true;
+            status.textContent = `Envoi de ${file.name}… ${pct}%`;
+          });
+          galleryVideos.push(result.url);
+          renderVideoGalleryList();
+        } catch (err) {
+          showToast(`Échec de l'envoi de ${file.name}: ${err.message}`, "error");
+        } finally {
+          clearInterval(ticker);
+        }
+      }
+      status.style.display = "none";
+      e.target.value = "";
+    });
+
+    // ---------- Galerie photo ----------
+    function renderGalleryThumbs() {
+      const wrap = document.getElementById("gallery-thumbs");
+      wrap.innerHTML = galleryImages.map((url, i) => `
+        <div style="position:relative; width:70px; height:70px;">
+          <img src="${url}" style="width:100%; height:100%; object-fit:cover; border-radius:var(--radius-sm,4px); border:1px solid var(--border-soft);" />
+          <button type="button" data-remove-gallery="${i}" title="Retirer"
+            style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; border:none; background:var(--ink); color:#fff; font-size:0.7rem; cursor:pointer;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>`).join("");
+      wrap.querySelectorAll("[data-remove-gallery]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          galleryImages.splice(parseInt(btn.dataset.removeGallery, 10), 1);
+          renderGalleryThumbs();
+        });
+      });
+    }
+
+    document.getElementById("f-gallery-file").addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
+      const status = document.getElementById("gallery-status");
+      status.style.display = "block";
+      for (const file of files) {
+        status.textContent = `Compression de ${file.name}…`;
+        try {
+          const dataUrl = await compressImageFile(file, 1400, 0.75);
+          galleryImages.push(dataUrl);
+          renderGalleryThumbs();
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      }
+      status.style.display = "none";
+      e.target.value = "";
+    });
+
+    // ---------- Variantes : rendu dynamique des lignes ----------
+    function addVariantRow(data = {}) {
+      const tbody = document.getElementById("variant-rows");
+      const row = document.createElement("tr");
+      row.dataset.variantId = data.id || "";
+      row.innerHTML = `
+        <td><input type="text" class="v-size" placeholder="M / 40…" value="${data.size || ''}" /></td>
+        <td><input type="text" class="v-color" placeholder="Indigo…" value="${data.color || ''}" /></td>
+        <td><input type="number" class="v-stock" min="0" value="${data.stock ?? 0}" /></td>
+        <td><input type="text" class="v-sku" placeholder="SKU" value="${data.sku || ''}" /></td>
+        <td><button type="button" class="variant-remove" title="Retirer"><i class="fa-solid fa-xmark"></i></button></td>
+      `;
+      row.querySelector(".variant-remove").addEventListener("click", () => {
+        if (row.dataset.variantId) removedVariantIds.push(row.dataset.variantId);
+        row.remove();
+      });
+      tbody.appendChild(row);
+    }
+
+    document.getElementById("add-variant-row").addEventListener("click", () => addVariantRow());
+
+    // ---------- Upload image ----------
+    document.getElementById("f-image-file").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const status = document.getElementById("img-status");
+      status.style.display = "block";
+      status.textContent = "Compression de l'image…";
+      try {
+        const dataUrl = await compressImageFile(file, 1600, 0.78);
+        uploadedImageUrl = dataUrl;
+        document.getElementById("img-preview").src = uploadedImageUrl;
+        document.getElementById("img-preview").style.display = "block";
+        document.getElementById("img-placeholder").style.display = "none";
+        status.style.display = "none";
+      } catch (err) {
+        status.style.display = "none";
+        showToast(err.message, "error");
+      }
+    });
+
+    // ---------- Catégories ----------
+    async function loadCategoryOptions() {
+      try {
+        const categories = await api.getCategories();
+        const select = document.getElementById("f-category");
+        select.insertAdjacentHTML("beforeend", categories.map(c =>
+          `<option value="${c.slug}">${c.name}</option>`).join(""));
+      } catch (err) {
+        showToast("Impossible de charger les catégories: " + err.message, "error");
+      }
+    }
+
+    // ---------- Chargement en mode édition ----------
+    async function loadForEdit() {
+      if (!productId) {
+        addVariantRow(); // une ligne vide de départ en création
+        return;
+      }
+      document.querySelector("[data-form-title]").textContent = "Modifier le produit";
+      document.querySelector("[data-breadcrumb-current]").textContent = "Modifier";
+      try {
+        const p = await api.getProduct(productId);
+        document.getElementById("f-name").value = p.name;
+        document.getElementById("f-category").value = p.category;
+        document.getElementById("f-price").value = p.base_price;
+        document.getElementById("f-description").value = p.description || "";
+        document.getElementById("f-active").checked = p.active;
+        document.getElementById("f-model3d").value = p.model_3d_url || "";
+        document.getElementById("f-old-price").value = p.old_price || "";
+        document.getElementById("f-badge").value = p.badge || "";
+        const details = p.details || {};
+        document.getElementById("f-detail-matiere").value = details["Matière"] || "";
+        document.getElementById("f-detail-dimensions").value = details["Dimensions"] || "";
+        document.getElementById("f-detail-entretien").value = details["Entretien"] || "";
+        document.getElementById("f-detail-origine").value = details["Origine"] || "";
+        galleryImages = Array.isArray(p.images) ? [...p.images] : [];
+        renderGalleryThumbs();
+        galleryVideos = Array.isArray(p.videos) ? [...p.videos] : [];
+        renderVideoGalleryList();
+        if (p.image) {
+          uploadedImageUrl = p.image;
+          document.getElementById("img-preview").src = p.image;
+          document.getElementById("img-preview").style.display = "block";
+          document.getElementById("img-placeholder").style.display = "none";
+        }
+        (p.variants || []).forEach(v => addVariantRow(v));
+        if (!(p.variants || []).length) addVariantRow();
+      } catch (err) {
+        showToast("Impossible de charger le produit: " + err.message, "error");
+      }
+    }
+    loadCategoryOptions().then(loadForEdit);
+
+    // ---------- Sauvegarde ----------
+    document.getElementById("save-btn").addEventListener("click", async () => {
+      const btn = document.getElementById("save-btn");
+      const name = document.getElementById("f-name").value.trim();
+      const category = document.getElementById("f-category").value;
+      const base_price = parseFloat(document.getElementById("f-price").value);
+
+      if (!name || !category || !base_price) {
+        showToast("Nom, catégorie et prix sont requis.", "error");
+        return;
+      }
+
+      const details = {};
+      const matiere = document.getElementById("f-detail-matiere").value.trim();
+      const dimensions = document.getElementById("f-detail-dimensions").value.trim();
+      const entretien = document.getElementById("f-detail-entretien").value.trim();
+      const origine = document.getElementById("f-detail-origine").value.trim();
+      if (matiere) details["Matière"] = matiere;
+      if (dimensions) details["Dimensions"] = dimensions;
+      if (entretien) details["Entretien"] = entretien;
+      if (origine) details["Origine"] = origine;
+
+      const oldPriceRaw = document.getElementById("f-old-price").value;
+
+      const payload = {
+        name,
+        category,
+        base_price,
+        old_price: oldPriceRaw ? parseFloat(oldPriceRaw) : null,
+        badge: document.getElementById("f-badge").value || null,
+        description: document.getElementById("f-description").value.trim(),
+        active: document.getElementById("f-active").checked,
+        image: uploadedImageUrl || undefined,
+        images: galleryImages,
+        videos: galleryVideos,
+        details,
+        model_3d_url: document.getElementById("f-model3d").value.trim() || undefined,
+      };
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enregistrement…`;
+
+      try {
+        const product = productId
+          ? await api.updateProduct(productId, payload)
+          : await api.createProduct(payload);
+
+        // Variantes : lignes supprimées
+        for (const id of removedVariantIds) {
+          await api.deleteVariant(id).catch(() => {});
+        }
+
+        // Variantes : lignes présentes (nouvelles ou existantes)
+        const rows = document.querySelectorAll("#variant-rows tr");
+        for (const row of rows) {
+          const size = row.querySelector(".v-size").value.trim();
+          const color = row.querySelector(".v-color").value.trim();
+          const stock = parseInt(row.querySelector(".v-stock").value, 10) || 0;
+          const sku = row.querySelector(".v-sku").value.trim();
+          if (!size || !color) continue;
+
+          if (row.dataset.variantId) {
+            await api.updateVariant(row.dataset.variantId, { size, color, stock, sku: sku || null });
+          } else {
+            await api.addVariant(product.id, { size, color, stock, sku: sku || undefined });
+          }
+        }
+
+        showToast("Produit enregistré.");
+        setTimeout(() => window.location.href = "products.html", 700);
+      } catch (err) {
+        showToast(err.message, "error");
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> Enregistrer`;
+      }
+    });
+  </script>
+</body>
+</html>
